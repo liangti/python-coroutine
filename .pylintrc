@@ -147,7 +147,8 @@ disable=print-statement,
         missing-final-newline,
         too-few-public-methods,
         attribute-defined-outside-init,
-        redefined-argument-from-local
+        redefined-argument-from-local,
+        invalid-name
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

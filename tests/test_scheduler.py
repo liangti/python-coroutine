@@ -1,7 +1,7 @@
 """Tests for Scheduler"""
 from uuid import uuid1
 
-from src.task import GetTid, NewTask, KillTask, WaitTask
+from src.task import GetTid, NewTask, KillTask, WaitTask, ReadWait, WriteWait
 from src.scheduler import Scheduler
 
 
@@ -40,7 +40,7 @@ def test_get_tid():
     scheduler.mainloop()
 
     # can we do better than hard code?
-    assert tids == [3, 4]
+    assert tids == [4, 5]
 
 
 def test_new_task():
@@ -85,7 +85,7 @@ def test_kill_task():
     assert bucket == [0, 1]
 
 
-def test_wait_for():
+def test_wait_for_task():
     """Validate WaitFor system call wait for child task to finish"""
     end_flag = int(uuid1())
     bucket = []
@@ -108,3 +108,28 @@ def test_wait_for():
     expect_bucket = [0, 1, 2, 3, 4]
     expect_bucket.append(end_flag)
     assert bucket == expect_bucket
+
+
+def test_wait_for_io():
+    """Validate ReadWait/WriteWait wait for file descriptor to be available"""
+    bucket = []
+    file_obj = None
+    def read():
+        bucket.append(0)
+        yield ReadWait(file_obj)
+        bucket.append(1)
+
+    def write():
+        bucket.append(2)
+        yield WriteWait(file_obj)
+        bucket.append(3)
+
+    with open('README.md', 'a+') as handler:
+        file_obj = handler
+
+        scheduler = Scheduler()
+        scheduler.new(read())
+        scheduler.new(write())
+        scheduler.mainloop()
+
+    assert bucket == [0, 2, 1, 3]

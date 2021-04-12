@@ -84,3 +84,29 @@ class WaitTask(SystemCall):
         self.task.sendval = finished
         if finished:
             self.scheduler.schedule(self.task)
+
+
+class ReadWait(SystemCall):
+    """Wait for a fd to read system call"""
+    def __init__(self, file_obj):
+        """Init"""
+        self.file_obj = file_obj
+
+    def handle(self):
+        """Handle wait for read system call"""
+        # file descriptor number
+        fd = self.file_obj.fileno()
+        self.scheduler.wait_for_read(self.task, fd)
+
+
+class WriteWait(SystemCall):
+    """Wait for a file descriptor to write system call"""
+    def __init__(self, file_obj):
+        """Init"""
+        self.file_obj = file_obj
+
+    def handle(self):
+        """Handle wait for read system call"""
+        # file descriptor number
+        fd = self.file_obj.fileno()
+        self.scheduler.wait_for_write(self.task, fd)
